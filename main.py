@@ -1,20 +1,18 @@
-from fastapi import FastAPI, HTTPException
+import os
 import pandas as pd
-from datetime import datetime
+from fastapi import FastAPI, HTTPException
 
-# Crear la instancia de la aplicación
 app = FastAPI()
 
-@app.get("/")
-def read_root():
-    return {"message": "Bienvenido a la API de películas"}
+# Cargar el archivo CSV usando la variable de entorno
+CSV_FILE_PATH = os.getenv("CSV_FILE_PATH", "df_combinado.csv")  # Valor por defecto si no está definida
 
-
-# Cargar el archivo CSV y verificar la carga
 try:
-    df = pd.read_csv("df_combinado.csv")  
+    # Intentar cargar el archivo CSV
+    df = pd.read_csv(CSV_FILE_PATH)
     df['release_date'] = pd.to_datetime(df['release_date'], errors='coerce')
     
+    # Verificar que el DataFrame no esté vacío y que 'release_date' sea válida
     if df.empty:
         raise ValueError("El DataFrame está vacío. Revisa el archivo fuente.")
     if df['release_date'].isnull().all():
