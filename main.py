@@ -6,18 +6,18 @@ app = FastAPI()
 
 
 # Cargar el archivo CSV usando una ruta relativa
-df_combinado = pd.read_csv("df_combinado.csv")
+df = pd.read_csv("df_combinado.csv")
 
 
 try:
     # Intentar cargar el archivo CSV
-    df_combinado['release_date'] = pd.to_datetime(df_combinado['release_date'], errors='coerce')
+    df['release_date'] = pd.to_datetime(df['release_date'], errors='coerce')
 
     
     # Verificar que el DataFrame no esté vacío y que 'release_date' sea válida
-    if df_combinado.empty:
+    if df.empty:
         raise ValueError("El DataFrame está vacío. Revisa el archivo fuente.")
-    if df_combinado['release_date'].isnull().all():
+    if df['release_date'].isnull().all():
         raise ValueError("La columna 'release_date' contiene valores nulos o no válidos.")
     print("Archivo cargado y verificado correctamente.")
 except Exception as e:
