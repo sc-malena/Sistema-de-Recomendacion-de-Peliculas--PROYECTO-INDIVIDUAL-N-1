@@ -106,13 +106,32 @@ def get_actor(nombre_actor: str):
 # get_director: Devuelve éxito del director con detalles de cada película
 @app.get("/get_director/{nombre_director}")
 def get_director(nombre_director: str):
+    # Filtramos las películas que contienen al director
     direcciones = df[df['crew_procesado'].str.contains(f"'nombre': '{nombre_director}'", case=False, na=False)]
+    
     if direcciones.empty:
         raise HTTPException(status_code=404, detail="Director no encontrado")
     
     peliculas = []
+    
+    # Asegurarnos de que las columnas 'revenue' y 'budget' sean numéricas
+    df['revenue'] = pd.to_numeric(df['revenue'], errors='coerce')
+    df['budget'] = pd.to_numeric(df['budget'], errors='coerce')
+    
     for _, row in direcciones.iterrows():
-        retorno_individual = row['revenue'] / row['budget'] if row['budget'] > 0 else 0
+        # Verificar que 'budget' y 'revenue' no sean NaN
+        print(f"Procesando película: {row['title']}")
+        print(f"Revenue: {row['revenue']}, Budget: {row['budget']}")
+        
+        # Asegurarse de que el 'budget' es mayor que 0 para el cálculo
+        if row['budget'] > 0:
+            retorno_individual = row['revenue'] / row['budget']
+        else:
+            retorno_individual = 0
+        
+        print(f"Retorno individual: {retorno_individual}")
+        
+        # Crear el diccionario de la película
         pelicula_info = {
             "titulo": row['title'],
             "fecha_lanzamiento": row['release_date'],
@@ -122,8 +141,53 @@ def get_director(nombre_director: str):
         }
         peliculas.append(pelicula_info)
     
+    # Calcular retorno total
     retorno_total = direcciones['revenue'].sum() / direcciones['budget'].sum() if direcciones['budget'].sum() > 0 else 0
     return {
         "message": f"El director {nombre_director} tiene un retorno total de {retorno_total}",
         "peliculas": peliculas
     }
+
+
+import random
+import ast
+from pydantic import BaseModel
+from typing import List
+
+# Limpiar los nombres de las columnas
+df.columns = df.columns.str.strip()
+
+# Verificar si 'genres_names' está presente
+if 'genres_names' not in df.columns:
+    raise HTTPException(status_code=500, detail="La columna 'genres_names' no está presente en el CSV")
+
+# Definir el modelo de la película
+class Movie(BaseModel):
+    id: int
+    title: str
+    genre: List[str]  # Ahora acepta una lista de géneros
+
+# Convertir la columna 'genres_names' de cadenas a listas
+df['genres_names'] = df['genres_names'].apply(ast.literal_eval)
+
+# Convertir el DataFrame a una lista de objetos Movie, manteniendo la lista de géneros
+movies = [Movie(id=row['id'], title=row['title'], genre=row['genres_names']) for index, row in df.iterrows()]
+
+@app.get("/recommendation", response_model=Movie)
+def recommend_movie(genre: str = None):
+    try:
+        if genre:
+            # Filtrar películas por género, buscando el género en la lista
+            filtered_movies = [movie for movie in movies if genre.lower() in [g.lower() for g in movie.genre]]
+            if filtered_movies:
+                return random.choice(filtered_movies)
+            else:
+                raise HTTPException(status_code=404, detail=f"No se encontraron películas para el género '{genre}'")
+        else:
+            # Si no se pasa el género, devolver una película aleatoria
+            return random.choice(movies)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+
