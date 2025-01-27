@@ -1,6 +1,11 @@
 # Sistema de Recomendación de Películas
 
-Este proyecto implementa un **sistema de recomendación de películas** basado en **similitud de contenido** utilizando **FastAPI** y **Cosine Similarity**. La aplicación proporciona recomendaciones personalizadas de películas en función de las preferencias del usuario, utilizando datos agregados de diversas plataformas de streaming.
+Este proyecto implementa un **sistema de recomendación de películas** utilizando técnicas de **similitud de contenido**, con el objetivo de proporcionar recomendaciones personalizadas basadas en las preferencias del usuario. La aplicación emplea **FastAPI** para construir una API REST rápida y eficiente, y utiliza **Cosine Similarity** para calcular la similitud entre películas. Los datos utilizados provienen de diversas plataformas de streaming, lo que permite hacer recomendaciones precisas y relevantes.
+
+Los usuarios pueden interactuar con la API para recibir sugerencias de películas similares a las que ya han visto o que podrían interesarles según sus gustos. La recomendación se basa en los atributos de las películas, como los géneros, actores y directores, para ofrecer una experiencia personalizada.
+
+El sistema está diseñado para ser escalable y fácil de integrar con otras plataformas de streaming en el futuro. Además, el uso de **FastAPI** permite que la API maneje múltiples solicitudes de manera eficiente, ofreciendo tiempos de respuesta rápidos y bajos costos de ejecución.
+
 
 ## Tecnologías utilizadas
 
